@@ -16,7 +16,7 @@ no.paper = 20
 rep.low = 3
 rep.up = 20
 #Number of iterations of the simulation#
-iteration = 5
+iteration = 5000
 
 #standard deviation of the random study effect#
 sd.e = c(0.1, 0.5, 1)
