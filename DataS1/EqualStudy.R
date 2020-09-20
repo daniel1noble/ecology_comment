@@ -6,6 +6,8 @@ library(Matrix)
 library(nlme)
 library(lme4)
 library(MCMCglmm)
+library(robumeta)
+rm(list=ls())
 
 #Set number of papers in the simulated meta-analysis data set#
 no.paper = 20
@@ -31,9 +33,9 @@ parm$mu = rep(c(0.5,4.5,14.5), times=9)
 scenario = dim(parm)[1]
 
 #Create array to store estimates from each method#
-parm.est = array(dim=c(scenario,iteration,5))
-parm.low = array(dim=c(scenario,iteration,5))
-parm.up = array(dim=c(scenario,iteration,5))
+  parm.est = array(dim=c(scenario,iteration,10))
+  parm.low = array(dim=c(scenario,iteration,10))
+   parm.up = array(dim=c(scenario,iteration,10))
 tau2.paper = array(dim=c(scenario,iteration,2))
 
 set.seed(5)
@@ -100,45 +102,56 @@ for(k in 1:scenario){
 	tau2.paper[k,a,1] = as.numeric(try(mod4$sigma2[1]))	
 	tau2.paper[k,a,2] = as.numeric(try(mod4$sigma2[2]))
 
-##################################################################
-	## Added simulations
-##################################################################
-
-	# lme4 - this calculates correct degrees of freedom
-		res.lme <- lme(log.ratio ~ 1, random = ~ 1 | paper, weights = varFixed(~ var.log.ratio), control=lmeControl(sigma = 1), data=effect.size)
-		summary(res.lme)
-		       df <- res.lme$fixDF$X[1]
-		       se <- sqrt(res.lme$varFix)
-		      int <- fixef(res.lme)
-		ci.up_lme <- int + (se * qt(0.975, df))
-		ci.lw_lme <- int - (se * qt(0.975, df))
-
-			parm.est <- mod4$b
-	
-	# Correct metafor CI values
-		 ci.up_mod4_v1 <- parm.est + (mod4$se * qt(0.975, df))
-		 ci.lw_mod4_v1 <- parm.est - (mod4$se * qt(0.975, df))
-
- 	# Metafor with papers - 1 (DF)
-		 papers <- mod4$s.nlevels [1]
-		 ci.up_mod4_v2 <- parm.est + (mod4$se * qt(0.975, papers-1))
-		 ci.lw_mod4_v2 <- parm.est - (mod4$se * qt(0.975, papers-1))
-
-		 k <- mod4$k
-		 ci.up_mod4_v3 <- parm.est + (mod4$se * qt(0.975, k-1))
-		 ci.lw_mod4_v3 <- parm.est - (mod4$se * qt(0.975, k-1))
-	
-	# MCMCglmm
-		prior <- list(R = list(V = 1, nu = 0.001),
-					  G = list(G1 = list(V = 1, nu = 0.001)))
-
-		res.MCMCglmm <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior)
-
 	#Robust variance estimates method by Hedges#
 	mod5 = try(robu(formula=log.ratio~1, data=effect.size, studynum=paper, var.eff.size=var.log.ratio))
 	parm.est[k,a,5] = as.numeric(try(mod5$reg_table$b.r)) 
 	parm.low[k,a,5] = as.numeric(try(mod5$reg_table$CI.L))
 	parm.up[k,a,5] = as.numeric(try(mod5$reg_table$CI.U))
+
+##################################################################
+	## Added simulations
+##################################################################
+
+	# lme4 - this calculates correct degrees of freedom, method 6
+		mod6 <- try(lme(log.ratio ~ 1, random = ~ 1 | paper, weights = varFixed(~ var.log.ratio), control=lmeControl(sigma = 1), data=effect.size))
+
+		       df <- mod6$fixDF$X[1]
+		       se <- sqrt(mod6$varFix)
+		       int = fixef(mod6)
+
+	parm.est[k,a,6] = as.numeric(int) 
+	parm.low[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
+	 parm.up[k,a,6] = as.numeric(try(int - (se * qt(0.975, df))))
+		      
+	
+	# Correct metafor CI values using df from nlme – method 7
+	 		parm.est[k,a,7] <- as.numeric(mod4$b)
+		    parm.low[k,a,7] <- as.numeric(mod4$b - (mod4$se * qt(0.975, df)))
+		     parm.up[k,a,7] <- as.numeric(mod4$b + (mod4$se * qt(0.975, df)))
+
+ 	# Metafor with papers - 1  used as DF - method 8
+		            papers <- mod4$s.nlevels [1]
+		   parm.est[k,a,8] <- as.numeric(mod4$b)
+		    parm.up[k,a,8] <- as.numeric(mod4$b + (mod4$se * qt(0.975, papers-1)))
+		   parm.low[k,a,8] <- as.numeric(mod4$b - (mod4$se * qt(0.975, papers-1)))
+
+	# Metafor just using normal k for comparison - method 9
+		               effect_Num<- mod4$k
+		 parm.est[k,a,9] <- as.numeric(mod4$b)
+		  parm.up[k,a,9] <- as.numeric(mod4$b + (mod4$se * qt(0.975, effect_Num-1)))
+		 parm.low[k,a,9] <- as.numeric(mod4$b - (mod4$se * qt(0.975, effect_Num-1)))
+	
+	# MCMCglmm - method 10
+		prior <- list(R = list(V = 1, nu = 0.001),
+					  G = list(G1 = list(V = 1, nu = 0.001)))
+
+		mod10 <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior, verbose = FALSE)
+
+		 parm.est[k,a,10] <- summary(mod10)$solutions[1]
+		 parm.low[k,a,10] <- summary(mod10)$solutions[2]
+		  parm.up[k,a,10] <- summary(mod10)$solutions[3]
+		
+	
 	}
 	#print when the kth scenario is done to track simulation progress#
 	print(k)
