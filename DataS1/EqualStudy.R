@@ -120,8 +120,8 @@ for(k in 1:scenario){
 		       int = fixef(mod6)
 
 	parm.est[k,a,6] = as.numeric(int) 
-	parm.low[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
-	 parm.up[k,a,6] = as.numeric(try(int - (se * qt(0.975, df))))
+	parm.low[k,a,6] = as.numeric(try(int - (se * qt(0.975, df))))
+	 parm.up[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
 		      
 	
 	# Correct metafor CI values using df from nlme – method 7
@@ -159,3 +159,8 @@ for(k in 1:scenario){
 
 
 save.image(file="EqualStudy.RData")
+
+
+# Explore what the results are for the precision of the estimate across 27 sceneries; as defined in param. Take the SD of the estimate vector for all 10 methods
+     SD_result <- apply(parm.est, c(1,3), function(x) sd(x, na.rm = TRUE)) # take SD across the cols for each row and method
+full_SD_result <- cbind(parm, SD_result) # To make this easier to see, have a look at the specific param combinations for each simulation
