@@ -11,7 +11,7 @@ rm(list=ls())
 
 #Set number of papers in the simulated meta-analysis data set#
 no.paper = 20
-#Upper and lower bound for the number of replicates in control and treamtent for each study#
+#Upper and lower bound for the number of replicates in control and treatment for each study#
 #Number of replicates is an integer draw uniformly between the upper and lower bound#
 rep.low = 3
 rep.up = 20
@@ -23,7 +23,7 @@ sd.e = c(0.1, 0.5, 1)
 #correlation coefficient between studies within the same paper#
 rho.e = c(0.1, 0.5, 0.9)
 #Size parameter used to generate number of studies per paper from shifted binomial distribution#
-#The three sizes correspond to means of 1.5, 5.5 amd 15.5#
+#The three sizes correspond to means of 1.5, 5.5 and 15.5#
 #Obtained from StudyNo_Distribution.R#
 size = c(0.3339891,0.4522312,0.6287481)
 
@@ -70,9 +70,10 @@ for(k in 1:scenario){
 	}
 	
 	#Calculate response ratio and its variance for each study#
-	effect.size = ddply(raw.data, c("paper","study"), summarise, log.ratio=log(mean(yt)/mean(yc)), var.log.ratio=var(yt)/	length(yt)/mean(yt)^2+var(yc)/length(yc)/mean(yc)^2)
+	effect.size = ddply(raw.data, c("paper","study"), summarise, log.ratio=log(mean(yt)/mean(yc)), 
+													var.log.ratio=var(yt)/length(yt)/mean(yt)^2+var(yc)/length(yc)/mean(yc)^2)
 	
-	#Rnadom effects model that assumes independence#
+	#Random effects model that assumes independence#
 	mod1 = try(rma(yi=log.ratio, vi=var.log.ratio, mods=~1, method="REML", data=effect.size, test="knha"))
 	parm.est[k,a,1] = as.numeric(try(mod1$b))
 	parm.low[k,a,1] = as.numeric(try(mod1$ci.lb))
@@ -112,7 +113,7 @@ for(k in 1:scenario){
 	## Added simulations
 ##################################################################
 
-	# lme4 - this calculates correct degrees of freedom, method 6
+	# Calculates correct degrees of freedom with nlme, method 6 #
 		mod6 <- try(lme(log.ratio ~ 1, random = ~ 1 | paper, weights = varFixed(~ var.log.ratio), control=lmeControl(sigma = 1), data=effect.size))
 
 		       df <- mod6$fixDF$X[1]
@@ -124,29 +125,28 @@ for(k in 1:scenario){
 	 parm.up[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
 		      
 	
-	# Correct metafor CI values using df from nlme – method 7
+	# Correct metafor CI values using df from nlme, method 7 #
 	 		parm.est[k,a,7] <- as.numeric(mod4$b)
 		    parm.low[k,a,7] <- as.numeric(mod4$b - (mod4$se * qt(0.975, df)))
 		     parm.up[k,a,7] <- as.numeric(mod4$b + (mod4$se * qt(0.975, df)))
 
- 	# Metafor with papers - 1  used as DF - method 8
+ 	# Use papers as DF when calculating CIs with metafor, method 8 #
 		            papers <- mod4$s.nlevels [1]
 		   parm.est[k,a,8] <- as.numeric(mod4$b)
 		    parm.up[k,a,8] <- as.numeric(mod4$b + (mod4$se * qt(0.975, papers-1)))
 		   parm.low[k,a,8] <- as.numeric(mod4$b - (mod4$se * qt(0.975, papers-1)))
 
-	# Metafor just using normal k for comparison - method 9
+	# Use normal k as df for calculating CIs from metafor for comparison, method 9 #
 		               effect_Num<- mod4$k
 		 parm.est[k,a,9] <- as.numeric(mod4$b)
 		  parm.up[k,a,9] <- as.numeric(mod4$b + (mod4$se * qt(0.975, effect_Num-1)))
 		 parm.low[k,a,9] <- as.numeric(mod4$b - (mod4$se * qt(0.975, effect_Num-1)))
 	
-	# MCMCglmm - method 10
+	# Use a Bayesian approach with MCMCglmm, method 10 #
 		prior <- list(R = list(V = 1, nu = 0.001),
 					  G = list(G1 = list(V = 1, nu = 0.001)))
 
 		mod10 <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior, verbose = FALSE)
-
 		 parm.est[k,a,10] <- summary(mod10)$solutions[1]
 		 parm.low[k,a,10] <- summary(mod10)$solutions[2]
 		  parm.up[k,a,10] <- summary(mod10)$solutions[3]
