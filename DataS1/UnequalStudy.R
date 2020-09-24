@@ -147,8 +147,8 @@ for(k in 1:scenario) {
 		 parm.low[k,a,9] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, effect_Num-1))))
 	
 	# Use a Bayesian approach with MCMCglmm, method 10 #
-		prior <- list(R = list(V = 1, nu = 0.001),
-					  G = list(G1 = list(V = 1, nu = 0.001)))
+		prior <- list(R = list(V = 1, nu = 0.002), 
+              G = list(G1 = list(V = 1 , nu = 1, alpha.mu=0, alpha.V=25^2)))
 
 		mod10 <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior, verbose = FALSE)
 
