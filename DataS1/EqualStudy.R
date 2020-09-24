@@ -120,27 +120,27 @@ for(k in 1:scenario){
 		       se <- sqrt(mod6$varFix)
 		       int = fixef(mod6)
 
-	parm.est[k,a,6] = as.numeric(int) 
+	parm.est[k,a,6] = as.numeric(try(int))
 	parm.low[k,a,6] = as.numeric(try(int - (se * qt(0.975, df))))
 	 parm.up[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
 		      
 	
 	# Correct metafor CI values using df from nlme, method 7 #
-	 		parm.est[k,a,7] <- as.numeric(mod4$b)
-		    parm.low[k,a,7] <- as.numeric(mod4$b - (mod4$se * qt(0.975, df)))
-		     parm.up[k,a,7] <- as.numeric(mod4$b + (mod4$se * qt(0.975, df)))
+	 		parm.est[k,a,7] <- as.numeric(try(mod4$b))
+		    parm.low[k,a,7] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, df))))
+		     parm.up[k,a,7] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, df))))
 
  	# Use papers as DF when calculating CIs with metafor, method 8 #
 		            papers <- mod4$s.nlevels [1]
-		   parm.est[k,a,8] <- as.numeric(mod4$b)
-		    parm.up[k,a,8] <- as.numeric(mod4$b + (mod4$se * qt(0.975, papers-1)))
-		   parm.low[k,a,8] <- as.numeric(mod4$b - (mod4$se * qt(0.975, papers-1)))
+		   parm.est[k,a,8] <- as.numeric(try(mod4$b))
+		    parm.up[k,a,8] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, papers-1))))
+		   parm.low[k,a,8] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, papers-1))))
 
 	# Use normal k as df for calculating CIs from metafor for comparison, method 9 #
 		               effect_Num<- mod4$k
-		 parm.est[k,a,9] <- as.numeric(mod4$b)
-		  parm.up[k,a,9] <- as.numeric(mod4$b + (mod4$se * qt(0.975, effect_Num-1)))
-		 parm.low[k,a,9] <- as.numeric(mod4$b - (mod4$se * qt(0.975, effect_Num-1)))
+		 parm.est[k,a,9] <- as.numeric(try(mod4$b))
+		  parm.up[k,a,9] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, effect_Num-1))))
+		 parm.low[k,a,9] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, effect_Num-1))))
 	
 	# Use a Bayesian approach with MCMCglmm, method 10 #
 		prior <- list(R = list(V = 1, nu = 0.001),
@@ -150,7 +150,6 @@ for(k in 1:scenario){
 		 parm.est[k,a,10] <- summary(mod10)$solutions[1]
 		 parm.low[k,a,10] <- summary(mod10)$solutions[2]
 		  parm.up[k,a,10] <- summary(mod10)$solutions[3]
-		
 	
 	}
 	#print when the kth scenario is done to track simulation progress#
