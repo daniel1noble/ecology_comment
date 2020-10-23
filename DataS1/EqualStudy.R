@@ -7,6 +7,8 @@ library(nlme)
 library(lme4)
 library(MCMCglmm)
 library(robumeta)
+library(clubSandwich)
+
 rm(list=ls())
 
 #Set number of papers in the simulated meta-analysis data set#
@@ -33,9 +35,9 @@ parm$mu = rep(c(0.5,4.5,14.5), times=9)
 scenario = dim(parm)[1]
 
 #Create array to store estimates from each method#
-  parm.est = array(dim=c(scenario,iteration,10))
-  parm.low = array(dim=c(scenario,iteration,10))
-   parm.up = array(dim=c(scenario,iteration,10))
+  parm.est = array(dim=c(scenario,iteration,11))
+  parm.low = array(dim=c(scenario,iteration,11))
+   parm.up = array(dim=c(scenario,iteration,11))
 tau2.paper = array(dim=c(scenario,iteration,2))
 
 set.seed(5)
@@ -113,43 +115,44 @@ for(k in 1:scenario){
 	## Added simulations
 ##################################################################
 
-	# Calculates correct degrees of freedom with nlme, method 6 #
-		mod6 <- try(lme(log.ratio ~ 1, random = ~ 1 | paper, weights = varFixed(~ var.log.ratio), control=lmeControl(sigma = 1), data=effect.size))
-
-		       df <- mod6$fixDF$X[1]
-		       se <- sqrt(mod6$varFix)
-		       int = fixef(mod6)
-
-	parm.est[k,a,6] = as.numeric(try(int))
-	parm.low[k,a,6] = as.numeric(try(int - (se * qt(0.975, df))))
-	 parm.up[k,a,6] = as.numeric(try(int + (se * qt(0.975, df))))
-		      
-	
-	# Correct metafor CI values using df from nlme, method 7 #
-	 		parm.est[k,a,7] <- as.numeric(try(mod4$b))
-		    parm.low[k,a,7] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, df))))
-		     parm.up[k,a,7] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, df))))
-
- 	# Use papers as DF when calculating CIs with metafor, method 8 #
+	# METHOD 6 # Use papers as DF when calculating CIs with metafor, method 8 #
 		            papers <- mod4$s.nlevels [1]
-		   parm.est[k,a,8] <- as.numeric(try(mod4$b))
-		    parm.up[k,a,8] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, papers-1))))
-		   parm.low[k,a,8] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, papers-1))))
+		   parm.est[k,a,6] <- as.numeric(try(mod4$b))
+		    parm.up[k,a,6] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, papers-1))))
+		   parm.low[k,a,6] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, papers-1))))
 
-	# Use normal k as df for calculating CIs from metafor for comparison, method 9 #
-		               effect_Num<- mod4$k
-		 parm.est[k,a,9] <- as.numeric(try(mod4$b))
-		  parm.up[k,a,9] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, effect_Num-1))))
-		 parm.low[k,a,9] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, effect_Num-1))))
-	
-	# Use a Bayesian approach with MCMCglmm, method 10 #
+	# METHOD 7 - clubsandwich vs robumeta should be the same 
+		   mod6 <- coef_test(mod4, vcov="CR2", cluster = effect.size$paper)
+		   SW_df <- mod6$df
+			parm.est[k,a,7] <- as.numeric(try(mod6$beta))
+		    parm.up[k,a,7] <- as.numeric(try(mod6$beta + (mod6$SE * qt(0.975, SW_df))))
+		   parm.low[k,a,7] <- as.numeric(try(mod6$beta - (mod6$SE * qt(0.975, SW_df))))	
+
+	# METHOD 8 - Saitterwaite DF
+		   parm.est[k,a,8] <- as.numeric(try(mod4$b))
+		    parm.up[k,a,8] <- as.numeric(try(mod4$b + (mod4$se * qt(0.975, SW_df))))
+		   parm.low[k,a,8] <- as.numeric(try(mod4$b - (mod4$se * qt(0.975, SW_df))))
+
+    # METHOD 9 - Robust with paper-1
+		mod7 <- robust(mod4, cluster = effect.size$paper)
+		   parm.est[k,a,9] <- as.numeric(try(mod7$b))
+		    parm.up[k,a,9] <- as.numeric(try(mod7$b + (mod7$se * qt(0.975, papers-1))))
+		   parm.low[k,a,9] <- as.numeric(try(mod7$b - (mod7$se * qt(0.975, papers-1))))
+
+	# METHOD 10 - try to ditch DF correction.Method 8 and 7 should be identical
+	mod8 = try(robu(formula=log.ratio~1, data=effect.size, studynum=paper, var.eff.size=var.log.ratio, small = FALSE))
+	parm.est[k,a,10] = as.numeric(try(mod8$reg_table$b.r)) 
+	parm.low[k,a,10] = as.numeric(try(mod8$reg_table$CI.L))
+	 parm.up[k,a,10] = as.numeric(try(mod8$reg_table$CI.U))   
+
+	# METHOD 11 = Use a Bayesian approach with MCMCglmm
 		prior <- list(R = list(V = 1, nu = 0.002), 
               G = list(G1 = list(V = 1 , nu = 1, alpha.mu=0, alpha.V=25^2)))
 
-		mod10 <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior, verbose = FALSE)
-		 parm.est[k,a,10] <- summary(mod10)$solutions[1]
-		 parm.low[k,a,10] <- summary(mod10)$solutions[2]
-		  parm.up[k,a,10] <- summary(mod10)$solutions[3]
+	 mod9 <- MCMCglmm(log.ratio ~ 1, mev = effect.size$var.log.ratio, random = ~ paper, data = effect.size, prior = prior, verbose = FALSE)
+		 parm.est[k,a,11] <- summary(mod9)$solutions[1]
+		 parm.low[k,a,11] <- summary(mod9)$solutions[2]
+		  parm.up[k,a,11] <- summary(mod9)$solutions[3]
 	
 	}
 	#print when the kth scenario is done to track simulation progress#
@@ -158,6 +161,7 @@ for(k in 1:scenario){
 
 
 save.image(file="EqualStudy.RData")
+load("EqualStudy.RData")
 
 
 # Explore what the results are for the precision of the estimate across 27 sceneries; as defined in param. Take the SD of the estimate vector for all 10 methods
