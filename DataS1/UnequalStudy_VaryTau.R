@@ -34,9 +34,9 @@ parm$mu = rep(c(0.5,4.5,14.5), times=2)
 scenario = dim(parm)[1]
 
 #Create array to store estimates from each method#
-parm.est = array(dim=c(scenario,iteration,10))
-parm.low = array(dim=c(scenario,iteration,10))
-parm.up = array(dim=c(scenario,iteration,10))
+parm.est = array(dim=c(scenario,iteration,11))
+parm.low = array(dim=c(scenario,iteration,11))
+parm.up = array(dim=c(scenario,iteration,11))
 tau2.paper = array(dim=c(scenario,iteration,2))
 
 set.seed(5)
