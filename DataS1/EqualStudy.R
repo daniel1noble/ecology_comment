@@ -42,7 +42,7 @@ tau2.paper = array(dim=c(scenario,iteration,2))
 
 set.seed(5)
 
-for(k in 1:scenario){
+for(k in 24:27){
 	for(a in 1:iteration){
 	#Generate number of studies for each of the 20 papers contained in the meta-analysis#
 	no.study = 1 + rnbinom(n=no.paper, size=parm$size[k], mu=parm$mu[k])
