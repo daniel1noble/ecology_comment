@@ -2,7 +2,7 @@ pdf(width = 8.572687, height =  9.118943, file = "Figure3_NewSims.pdf")
 #Define the layout of multiple panel figure using layout matrix#
 layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(11:12),c(3:4),c(3:4),c(3:4),c(5:6),c(5:6),c(5:6),c(13:14),c(7:8),c(7:8),c(7:8),c(9:10),c(9:10),c(9:10))
 
-method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3), rgb(0.8,0.1,0.1))
+method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3), rgb(0.8,0.1,0.1), rgb(0.8,0.1,0.4))
 
 #Set up plotting device and figure margins#
 
@@ -69,8 +69,8 @@ par(mar=c(0,0,0,0), oma=c(4,4,3,2))
 load("EqualStudy.RData")
 
 #Calculate error rate and the confidence interval of error rate#
-error = array(dim=c(scenario, 10))
-error.ci = array(dim=c(scenario, 10))
+error = array(dim=c(scenario, 11))
+error.ci = array(dim=c(scenario, 11))
 
 cover = (parm.low<0) + (parm.up>0)
 
@@ -99,8 +99,8 @@ for(i in c(1,3,7,9)){
 		rate = error[size[i,1],1]
 		error[size[i,1],1] = 999
 	}
-	plot(error[size[i,1],]~c(1:10), xlim=c(0.5,31.5), ylim=c(0,0.13), pch=19, axes=F, col=method.col)
-	arrows(x0=c(1:10),y0=error[size[i,1],]-error.ci[size[i,1],],y1=error[size[i,1],]+error.ci[size[i,1],], length=0, col=method.col)
+	plot(error[size[i,1],]~c(1:11), xlim=c(0.5,33), ylim=c(0,0.13), pch=19, axes=F, col=method.col)
+	arrows(x0=c(1:11),y0=error[size[i,1],]-error.ci[size[i,1],],y1=error[size[i,1],]+error.ci[size[i,1],], length=0, col=method.col)
 	if(error[size[i,1],1]>0.1){
 		points(x=1, y=0.11, pch=19)
 		text(x=1, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
@@ -113,12 +113,12 @@ for(i in c(1,3,7,9)){
 		rate = error[size[i,j],1]
 		error[size[i,j],1] = 0.5
 		}
-		points(error[size[i,j],]~c(((j-1)*11+1):((j-1)*11+10)), pch=19, col=method.col)
-		arrows(x0=c(((j-1)*11+1):((j-1)*11+10)), y0=error[size[i,j],]-error.ci[size[i,j],], y1=error[size[i,j],]+error.ci[size[i,j],], length=0, col=method.col)
-		abline(v=11*(j-1), lty=2, col="grey")
+		points(error[size[i,j],]~c(((j-1)*12+1):((j-1)*12+11)), pch=19, col=method.col)
+		arrows(x0=c(((j-1)*12+1):((j-1)*12+11)), y0=error[size[i,j],]-error.ci[size[i,j],], y1=error[size[i,j],]+error.ci[size[i,j],], length=0, col=method.col)
+		abline(v=12*(j-1), lty=2, col="grey")
 		if(error[size[i,j],1]>0.1){
-			points(x=(j-1)*11+1, y=0.11, pch=19)
-			text(x=(j-1)*11+1, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
+			points(x=(j-1)*12+1, y=0.11, pch=19)
+			text(x=(j-1)*12+1, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
 			}
 	}
 	mtext(paste0("Mean:",paper.mean[i]),side=1,adj=0.95,line=-2.3, cex=0.75)
@@ -141,8 +141,8 @@ for(i in c(1,3,7,9)){
 #Load results from simulations that allow tau to vary#
 #Because different simulation files using the same variable name, save results in new variable os that it can be plotted together with the unequal study with constant tau across paper scenario#
 load("UnequalStudy_VaryTau.RData")
-error.varytau = array(dim=c(scenario,10))
-error.ci.varytau = array(dim=c(scenario,10))
+error.varytau = array(dim=c(scenario,11))
+error.ci.varytau = array(dim=c(scenario,11))
 cover.varytau = (parm.low<0) + (parm.up>0)
 
 for(i in 1:scenario){
@@ -153,8 +153,8 @@ for(i in 1:scenario){
 load("UnequalStudy.RData")
 
 #Calculate error rate and the confidence interval of error rate#
-error = array(dim=c(scenario, 10))
-error.ci = array(dim=c(scenario, 10))
+error = array(dim=c(scenario, 11))
+error.ci = array(dim=c(scenario, 11))
 cover = (parm.low<0) + (parm.up>0)
 for(i in 1:scenario){
 	error[i,] = 1-colSums(cover[i,,]==2,na.rm=T)/iteration
@@ -178,8 +178,8 @@ for(i in c(1,3,4,6)){
 		rate = error[size[i,1],1]
 		error[size[i,1],1] = 999
 	}
-	plot(error[size[i,1],]~c(1:10), xlim=c(0.5,47.5), ylim=c(0,0.13), pch=19, axes=F, col=method.col)
-	arrows(x0=c(1:10),y0=error[size[i,1],]-error.ci[size[i,1],],y1=error[size[i,1],]+error.ci[size[i,1],], length=0, col=method.col)
+	plot(error[size[i,1],]~c(1:11), xlim=c(0.5,47.5), ylim=c(0,0.13), pch=19, axes=F, col=method.col)
+	arrows(x0=c(1:11),y0=error[size[i,1],]-error.ci[size[i,1],],y1=error[size[i,1],]+error.ci[size[i,1],], length=0, col=method.col)
 	box()
 	abline(h=0.05, lty=2, col="grey")
 	#Directly note value of error rate if too high to show on figure#
@@ -193,25 +193,25 @@ for(i in c(1,3,4,6)){
 		rate = error[size[i,j],1]
 		error[size[i,j],1] = 0.5
 		}
-		points(error[size[i,j],]~c(((j-1)*11+1):((j-1)*11+10)), pch=19, col=method.col)
-		arrows(x0=c(((j-1)*11+1):((j-1)*11+10)), y0=error[size[i,j],]-error.ci[size[i,j],], y1=error[size[i,j],]+error.ci[size[i,j],], length=0, col=method.col)
-		abline(v=11*(j-1), lty=2, col="grey")
+		points(error[size[i,j],]~c(((j-1)*12+1):((j-1)*12+11)), pch=19, col=method.col)
+		arrows(x0=c(((j-1)*12+1):((j-1)*12+11)), y0=error[size[i,j],]-error.ci[size[i,j],], y1=error[size[i,j],]+error.ci[size[i,j],], length=0, col=method.col)
+		abline(v=12*(j-1), lty=2, col="grey")
 		if(error[size[i,j],1]>0.1){
-			points(x=(j-1)*11+1, y=0.11, pch=19)
-			text(x=(j-1)*11+1, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
+			points(x=(j-1)*12+1, y=0.11, pch=19)
+			text(x=(j-1)*12+1, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
 			}
 	}
 	if(error.varytau[i,1]>0.1){
 		rate = error.varytau[i,1]
 		error.varytau[i,1] = 0.5
 	}
-	points(error.varytau[i,]~c(36:45), pch=19, col=method.col)
-	arrows(x0=c(36:45), y0=error.varytau[i,]-error.ci.varytau[i,], y1=error.varytau[i,]+error.ci.varytau[i,], length=0, col=method.col)
+	points(error.varytau[i,]~c(37:47), pch=19, col=method.col)
+	arrows(x0=c(37:47), y0=error.varytau[i,]-error.ci.varytau[i,], y1=error.varytau[i,]+error.ci.varytau[i,], length=0, col=method.col)
 	if(error.varytau[i,1]>0.1){
-		points(x=36, y=0.11, pch=19)
-		text(x=36, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
+		points(x=37, y=0.11, pch=19)
+		text(x=37, y=0.1, labels=paste0(round(100*rate,0),"%"), cex=0.85)
 		}
-	abline(v=34, lty=2, col="grey")
+	abline(v=36, lty=2, col="grey")
 	mtext(paste0("Mean:",paper.mean[i]),side=1,adj=0.95,line=-2.3, cex=0.75)
 	mtext(paste0("SD:",paper.sd[i]),side=1, adj=0.95,line=-1.3, cex=0.75)
 	mtext(expression(tau==0.1), side=3, adj=0.06, cex=0.8, line=-1.4)
