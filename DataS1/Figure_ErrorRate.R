@@ -216,17 +216,15 @@ dev.off()
 #Adding new figures
 #######################################
 	library(tidyverse)
-# Lets just make a figure which shows the distribution of effects pooled across all scenarios. This gives less precedence to one particular scenario. What we really want to see is, how well do these perfect, on average, across all the simulated scenarios. 
+# Lets just make a figure which shows the distribution of effects pooled across all scenarios. This gives less precedence to one particular scenario. What we really want to see is, how well do these perform, on average, across all the simulated scenarios. 
 
    combined_error <- as.data.frame(rbind(error_ES, error.varytau, error_US)[,-1]) # we don't care about 1, so we can ditch)
-combined_error.ci <- rbind(error_ES.ci, error.ci.varytau, error_US.ci)[,-1]
-
 
 # Now, lets just plot across all the methods
 colnames(combined_error) <- c("One", "AV", "MLM", "RVE", "Papers_df", "CS", "SW_df", "Bayes")
 
 combined_data <- tidyr::pivot_longer(combined_error, cols = c(1:8), names_to = "Method")
-combined_data$Method <- factor(combined_data$Method, levels = c("One", "AV", "MLM", "RVE", "Papers_df", "CS", "SW_df", "Bayes"))
+combined_data$Method <- factor(combined_data$Method, levels = c("One", "AV", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"))
 
 pdf(width=7.365639, height = 5.207048, file = "Figure 1.pdf")
 ggplot(combined_data, aes(x=Method, y=value*100)) +
@@ -234,7 +232,7 @@ ggplot(combined_data, aes(x=Method, y=value*100)) +
   geom_jitter(shape=16, position=position_jitter(0.1), color = "black") +
   labs(y = "Error Rate %",
   		x = "Method") + 
-  scale_fill_manual(breaks = c("One", "AV", "MLM", "RVE", "Papers_df", "CS", "SW_df", "Bayes"), 
+  scale_fill_manual(breaks = c("One", "AV", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"), 
                    values=c(rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3), rgb(0.8,0.1,0.1), rgb(0.8,0.1,0.4))) + 
   theme_classic() + 
   geom_hline(yintercept = 5, linetype = "dashed", colour = "darkgrey") +
