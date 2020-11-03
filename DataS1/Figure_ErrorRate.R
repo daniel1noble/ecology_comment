@@ -226,6 +226,11 @@ colnames(combined_error) <- c("One", "AV", "MLM", "RVE", "Papers_df", "CS", "SW_
 combined_data <- tidyr::pivot_longer(combined_error, cols = c(1:8), names_to = "Method")
 combined_data$Method <- factor(combined_data$Method, levels = c("One", "AV", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"))
 
+# Some summary stats
+apply(combined_error, 2, range) #0.0344 for Bayes is lowest of all; 
+apply(combined_error, 2, mean)
+apply(combined_error, 2, median)
+
 pdf(width=7.365639, height = 5.207048, file = "Figure 1.pdf")
 ggplot(combined_data, aes(x=Method, y=value*100)) +
   geom_violin(aes(fill = Method), trim=FALSE) + 
