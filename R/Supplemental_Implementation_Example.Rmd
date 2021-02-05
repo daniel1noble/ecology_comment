@@ -59,31 +59,27 @@ Here, we will simulate some meta-analytic data assuming a correlation between ef
       n.effects = 5
           rho.e = 0.5
 
-    # Create covariance matrix for correlations within studies
+    # Create covariance matrix for correlations within studies. Assume SD = 1.
             cov.e <- matrix(data=rho.e, nrow=no.effects, ncol=no.effects)
       diag(cor.e) <- 1
 
-    # Create full matrix for all effect sizes; blocked by study. In otherwords, effects from a study re independent, but correlated by 0.5 within study. Assume SD = 1.
+    # Create full matrix for all effect sizes; blocked by study. In other words, effects from a study are independent, but correlated by r=0.5 within study. 
          cov.e_all <- as.matrix(Matrix::bdiag(replicate(no.paper, cov.e, simplify=FALSE)))
 
     # Add sampling variance
            vi  <- diag( ,no.paper*n.effects)
 
-    # Add study specific variance
-            tau <- diag(sqrt(1.2), no.paper*n.effects)
-
-    # Now create "effect sizes". This is not complete as we need sampling error etc. 
+    # Now create "effect sizes". This is not complete as we need sampling error etc. Add study specific effect (tau2 = 1.2). 
         effects <- MASS::mvrnorm(n = 1, mu = rep(0, n.effects*no.paper) + rep(rnorm(no.paper, 0, sqrt(1.2)), each = n.effects), cov.e_all + vi)    
 
-    # Create the data
+    # Create the data. We'll just assume that meta-analysts have already derived their effect size and sampling variance
       data <- data.frame(study_id = rep(1:30, each = n.effects),
                                yi = effects,
                                vi = diag(vi))
    
 ```
 
+# Correction using Robust Variance Estimator (Method 6)
 
-# Robust Variance Estimator Correction (Method 6)
 
-
-# Bayesian Multi-level Meta-analytic Model (Method 9)
+# Correction by Applying Bayesian Multi-level Meta-analytic Model (Method 9)
