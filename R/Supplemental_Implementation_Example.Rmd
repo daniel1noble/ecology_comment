@@ -55,29 +55,30 @@ Here, we will simulate some meta-analytic data assuming a correlation between ef
     # Simulate a dataset composed of 30 papers, each having between 3 to 20 effects from the same study.
 
     # Parameters
-      no.paper = 30
+       no.paper = 30
       n.effects = 5
+          rho.e = 0.5
 
-    # covariance matrix for correlations within studies
-            cor.e <- matrix(data=rho.e, nrow=no.effects, ncol=no.effects)
+    # Create covariance matrix for correlations within studies
+            cov.e <- matrix(data=rho.e, nrow=no.effects, ncol=no.effects)
       diag(cor.e) <- 1
 
     # Create full matrix for all effect sizes; blocked by study. In otherwords, effects from a study re independent, but correlated by 0.5 within study. Assume SD = 1.
-      cov.e_all <- as.matrix(Matrix::bdiag(replicate(no.paper, cor.e, simplify=FALSE)))
+         cov.e_all <- as.matrix(Matrix::bdiag(replicate(no.paper, cov.e, simplify=FALSE)))
 
     # Add sampling variance
-      m.e_al    <- diag( ,no.paper*n.effects)
+           vi  <- diag( ,no.paper*n.effects)
 
     # Add study specific variance
             tau <- diag(sqrt(1.2), no.paper*n.effects)
 
     # Now create "effect sizes". This is not complete as we need sampling error etc. 
-      effects <- MASS::mvrnorm(n = 1, mu = rep(0, n.effects*no.paper), tau + cor.e_all + )    
+        effects <- MASS::mvrnorm(n = 1, mu = rep(0, n.effects*no.paper) + rep(rnorm(no.paper, 0, sqrt(1.2)), each = n.effects), cov.e_all + vi)    
 
     # Create the data
-      data <- data.frame(study_id <- rep(1:30, each = n.effects),
-                               yi <- effects,
-                               vi <- )
+      data <- data.frame(study_id = rep(1:30, each = n.effects),
+                               yi = effects,
+                               vi = diag(vi))
    
 ```
 
