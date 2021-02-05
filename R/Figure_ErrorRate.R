@@ -1,5 +1,7 @@
 rm(list = ls())
-pdf(width = 7.365639 , height =  7.480176, file = "FigureS1.pdf")
+
+pacman::p_load(biwavelet, ggplot2, cowplot, gridGraphics, tidyverse)
+#pdf(width = 7.365639 , height =  7.480176, file = "FigureS1.pdf")
 #Define the layout of multiple panel figure using layout matrix#
 #layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(11:12),c(3:4),c(3:4),c(3:4),c(5:6),c(5:6),c(5:6),c(13:14),c(7:8),c(7:8),c(7:8),c(9:10),c(9:10),c(9:10))
 
@@ -9,7 +11,7 @@ layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(3:4),c(3:4),c(3:4),c(9:10),c(5:6),c(5:
 
 #Set up plotting device and figure margins#
 
-#quartz(w=8.572687, h=9.118943)
+quartz(w=7.365639, h=7.480176)
 layout(mat=layout.mat)
 par(mar=c(0,0,0,0), oma=c(4,4,3,2))
 
@@ -204,18 +206,17 @@ mtext("Experiment 1: equal correlation", outer=T, line=0.5, font=2, adj=1)
 mtext("Experiment 2: unequal correlation", outer=T, line=-26, font=2, adj=1)
 
 #Label axes#
-mtext("Error rate", side=2, outer=T, line=2.5, font=2)
+#mtext("Error rate %", side=2, outer=T, line=2.5, font=2)
 
 #Legends#
-mtext("Methods:", outer=T, line=0.5, font=2, adj=0, cex=0.70)
-legend("topleft", legend=c("1","2","3","4","5", "6", "7", "8", "9"), pch=19, xpd=NA, inset = c(-0.8, -3.52), bty="n", horiz=T, cex=1.35, col=method.col[1:9])
-dev.off()
-
+#mtext("Methods:", outer=T, line=0.5, font=2, adj=0, cex=0.70)
+#legend("topleft", legend=c("1","2","3","4","5", "6", "7", "8", "9"), pch=19, xpd=NA, inset = c(-0.8, -3.52), bty="n", horiz=T, cex=1.35, col=method.col[1:9])
+#dev.off()
+p2 <- recordPlot()
 
 ########################################
 #Adding new figures
 #######################################
-	library(tidyverse)
 # Lets just make a figure which shows the distribution of effects pooled across all scenarios. This gives less precedence to one particular scenario. What we really want to see is, how well do these perform, on average, across all the simulated scenarios. 
 
    combined_error <- as.data.frame(rbind(error_ES, error.varytau, error_US)[,-1]) # we don't care about 1, so we can ditch)
@@ -231,8 +232,8 @@ apply(combined_error, 2, range) #0.0344 for Bayes is lowest of all;
 apply(combined_error, 2, mean)
 apply(combined_error, 2, median)
 
-pdf(width=7.365639, height = 5.207048, file = "Figure 1.pdf")
-ggplot(combined_data, aes(x=Method, y=value*100)) +
+#pdf(width=7.365639, height = 5.207048, file = "Figure 1.pdf")
+p1 <- ggplot(combined_data, aes(x=Method, y=value*100)) +
   geom_violin(aes(fill = Method), trim=FALSE) + 
   geom_jitter(shape=16, position=position_jitter(0.1), color = "black") +
   labs(y = "Error Rate %",
@@ -242,4 +243,18 @@ ggplot(combined_data, aes(x=Method, y=value*100)) +
   theme_classic() + 
   geom_hline(yintercept = 5, linetype = "dashed", colour = "darkgrey") +
   theme(axis.text.x = element_blank())
-dev.off()
+#dev.off()
+
+
+############################################
+# New combined figure
+#plot_grid(p1, p2,
+ #         nrow = 2, ncol = 1, labels = 'AUTO',
+  #        hjust = 0, vjust = 1.5, label_size = 16, rel_heights = c(1,2))
+
+plot_grid(p1, p2,
+			 labels = 'AUTO',
+             hjust = 0, vjust = 1.5, label_size = 16)
+
+
+quartz.save(file = "Figure1_revised.pdf", type = "pdf")
