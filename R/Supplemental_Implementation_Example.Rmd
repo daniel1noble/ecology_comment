@@ -44,7 +44,7 @@ First, we'll load some of the packages that we'll need.
   # Loading packages & Functions
   ##################################
       install.packages("pacman")
-      pacman::p_load(tidyverse, MASS, kableExtra, gridExtra,  MCMCglmm, brms,  metafor, robumeta)
+      pacman::p_load(tidyverse, MASS, kableExtra, gridExtra,  MCMCglmm, brms,  metafor, robumeta, clubSandwich)
 ```
 
 # Simulating non-independent effect size data
@@ -75,11 +75,27 @@ Here, we will simulate some meta-analytic data assuming a correlation between ef
     # Create the data. We'll just assume that meta-analysts have already derived their effect size and sampling variance
       data <- data.frame(study_id = rep(1:30, each = n.effects),
                                yi = effects,
-                               vi = diag(vi))
+                               vi = diag(vi),
+                               obs = c(1:(n.effects*no.paper)))
    
 ```
 
+# Fit the Multi-level Meta-analytic Model
+```{r fitmodel}
+mod_multilevel = metafor::rma.mv(yi=yi, V=vi, mods=~1, random=list(~1|study_id,~1|obs), data=data, test="t")
+```
 # Correction using Robust Variance Estimator (Method 6)
 
-
+```{r fitrobust}
+robust(mod_multilevel, cluster = data$study_id)
+```
 # Correction by Applying Bayesian Multi-level Meta-analytic Model (Method 9)
+
+```{r fitrobust}
+prior <- list(R = list(V = 1, nu = 0.002), 
+              G = list(G1 = list(V = 1 , nu = 1, alpha.mu=0, alpha.V=25^2)))
+
+   bayes_multilevel <- MCMCglmm(yi ~ 1, mev = data$vi, random = ~ study_id, data = data, prior = prior, verbose = FALSE)
+```
+
+
