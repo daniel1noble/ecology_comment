@@ -1,0 +1,34 @@
+---
+  title: "Implementation Examples of multi-level meta-analytic models with robust variance estimators and using Bayesian approaches to deal with non-independent effect sizes"
+  author: Shinichi Nakagawa, Alistair M. Senior, Wolfgang Viechtbauer and Daniel W. A. Noble
+  date: "`r Sys.Date()`"
+  bibliography: refs.bib
+  csl: science.csl
+  output: 
+    bookdown::html_document2:
+      code_folding: hide
+      number_sections: no
+      toc: yes
+      toc_depth: 6
+      toc_float: yes
+    bookdown::word_document2:
+      toc: no
+      toc_depth: 6
+      number_sections: true
+      reference_docx: template.docx
+  editor_options: 
+    chunk_output_type: console
+---
+
+# Introduction
+Here, we demonstrate using some simple simulated data how meta-analyst's can implement some simple methods to correct for inflated Type I error rates when using multilevel models with non-independent effect size data. For ease of presentation, we use simulated data throughout and demonstrate two of the simplest and most effective methods that are most robust to a wide array of contexts that a meta-analyst might be faced with in analyzing their data.
+
+# Simulating non-independent effect size data
+
+
+
+
+# Robust Variance Estimator Correction (Method 6)
+
+
+# Bayesian Multi-level Meta-analytic Model (Method 9)
