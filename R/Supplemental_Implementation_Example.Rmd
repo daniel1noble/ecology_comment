@@ -52,7 +52,9 @@ First, we'll load some of the packages that we'll need.
 Here, we will simulate some meta-analytic data assuming a correlation between effect sizes within studies as r = 0.5.
 
 ```{r simulated data}
-    # Simulate a dataset composed of 30 papers, each having between 3 to 20 effects from the same study.
+    # Simulate a dataset composed of 30 papers, each having between 5 effects from the same study.
+  
+    set.seed(86)
 
     # Parameters
        no.paper = 30
@@ -83,11 +85,15 @@ Here, we will simulate some meta-analytic data assuming a correlation between ef
 # Fit the Multi-level Meta-analytic Model
 ```{r fitmodel}
 mod_multilevel = metafor::rma.mv(yi=yi, V=vi, mods=~1, random=list(~1|study_id,~1|obs), data=data, test="t")
+summary(mod_multilevel)
 ```
 # Correction using Robust Variance Estimator (Method 6)
 
 ```{r fitrobust}
-robust(mod_multilevel, cluster = data$study_id)
+  mod_RVE <- robust(mod_multilevel, cluster = data$study_id)
+
+ mod_RVE coef_test(mod4, vcov="CR2", cluster = data$study_id)
+  summary(mod_RVE)
 ```
 # Correction by Applying Bayesian Multi-level Meta-analytic Model (Method 9)
 
@@ -96,6 +102,8 @@ prior <- list(R = list(V = 1, nu = 0.002),
               G = list(G1 = list(V = 1 , nu = 1, alpha.mu=0, alpha.V=25^2)))
 
    bayes_multilevel <- MCMCglmm(yi ~ 1, mev = data$vi, random = ~ study_id, data = data, prior = prior, verbose = FALSE)
+   summary(bayes_multilevel)
 ```
 
+vcv <- impute_covariance_matrix(vi = data$vi, cluster = SATcoaching$study, r = 0.
 
