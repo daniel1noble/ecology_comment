@@ -57,18 +57,19 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
 ```{r simulated data, class.source='klippy'}
     # Simulate a dataset composed of 30 papers, each having 5 effects from the same study.
   
-        set.seed(870)
+        set.seed(87)
 
     # Parameters
-          no.paper = 30   # Numbers of unique papers
-         n.effects = 5    # Number of effects per paper. We will keep simple and balanced
+          no.paper = 20   # Numbers of unique papers
+         n.effects = 3    # Number of effects per paper. We will keep simple and balanced
              rho.e = 0.8  # Correlation in sampling variances
-          study_id = rep(1:30, each = n.effects)  # Study ID's
+          study_id = rep(1:no.paper, each = n.effects)  # Study ID's
          var_paper = 0.5  # Between-study variance (i.e., tau2)
-        var_effect = 0.2  # Effect size (or within study) variance
+        var_effect = 0.5  # Effect size (or within study) variance
                 mu = 0.4  # Average, or overall, effect size
-               rho = c(0.2, 0.4, 0.6, 0.8)
-    # Add sampling variance
+               rho = 0 #c(0.1, 0.2, 0.3, 0.4) # Note that, setting this to zero equates to Shinichi's approach
+   
+     # Add sampling variance
           # First, sample
           n.sample <- rnbinom(no.paper, mu = 40, size = 0.5) + 4
           
@@ -81,10 +82,10 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
           # Sampling variances
            vi <- (2*cv^2)/rep_sample
 
-    # Create the sampling variance matrix, which accounts for the correlation between effect sizes within study
-      sigma_vi <- as.matrix(Matrix::bdiag(impute_covariance_matrix(vi = vi, cluster = study_id, r = rho.e)))
+    # Create the sampling (co)variance matrix
+      cov_vi <- as.matrix(Matrix::bdiag(impute_covariance_matrix(vi = vi, cluster = study_id, r = rho.e)))
       
-    # Now create the effect size level covariance matrix. Thsi would simulate a situation where, for example, you have effect sizes on reading and maths that are clearly correlated, but to varying extents across studies
+    # Now create the effect size level covariance matrix. This would simulate a situation where, for example, you have effect sizes on reading and maths that are correlated, but to varying extents across studies. Of course, this could vary within study too.
       
       # Create list of matrices, 1 for each study
       matrices <- list()
@@ -95,14 +96,17 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
         matrices[[i]] <- tmp
       }
 
-      sigma_yi <- as.matrix(Matrix::bdiag(matrices))
+      # Build the full correlation matrix
+      cor_yi <- as.matrix(Matrix::bdiag(matrices))
       
-
+      # Calculate the full covariance matrix with Tau2
+      cov_yi <- cor_yi * sqrt(var_effect) * sqrt(var_effect)
+  
     # Now simulate effect sizes, assuming that the average effect size. Note here that, while we are not specificying a correlation between effect sizes from the same study explcitly using a covariance matrix, this is implied by fitting the random study effect. The degree of correlation between effects coming from the same study will depend on the intraclass correlation coefficient (i.e., ICC). In essence, if we assume that r = 0.5 between effect sizes, then this should be equivalent to a situation were var_paper and var_effect are both equal variance. At least in this case. The one additional aspect we are modelling is the correlation between sampling errors induced by non-independent effect sizes. This was not accounted for in Song et al. (2020)' simulations.
-         # yi <- mu + rep(rnorm(no.paper, 0, sqrt(var_paper)), each = n.effects) + rnorm(n.effects*no.paper, 0, sqrt(var_effect)) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), sigma_vi)     
+         # yi <- mu + rep(rnorm(no.paper, 0, sqrt(var_paper)), each = n.effects) + rnorm(n.effects*no.paper, 0, sqrt(var_effect)) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), cov_vi)     
           
-# I'm still not totally happy with how the simulation is running as we are technically not really modeling in the way that Song did. I realise that they did not model sampling covariance, this would have somehwat been built into their simulation though. Even still, the main idea here is that we have both, say, shared trait covariance and sampling covariance happening at once. Song didn't model sampling covarinace, and one possible reason we don't see much effect is because the total sampling variance might actually be low relative to total variance I'm going to try this...this is what I understand would be most likely to occure and this simulation makes most sense to me. 
-      yi <- mu + rep(rnorm(no.paper, 0, sqrt(var_paper)), each = n.effects) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), sigma_yi) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), sigma_vi)     
+# It still feels weird to me that we are not modelling correlation at the level of the effect size as well. I understand that, by virtue of having a study-level random effect we are inducing a correlation, but it is not really what we are trying to argue because that approach still assumes that effect sizes within studies are independent, which I think will confuse readers. As such, I think including an explcit covariance matrix at the level of the effect size would demonstrate how effects can covary as a result of sampling covariance AND because of shared traits, for example, effects that are correlated because they are effects on maths and reading. 
+      yi <- mu + rep(rnorm(no.paper, 0, sqrt(var_paper)), each = n.effects) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), cov_yi) + mvrnorm(n = 1, mu = rep(0,n.effects*no.paper), cov_vi)     
 
     # Create the data. We'll just assume that meta-analysts have already derived their effect size and sampling variance
       data <- data.frame(study_id = study_id,
