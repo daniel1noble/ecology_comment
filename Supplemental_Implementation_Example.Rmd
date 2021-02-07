@@ -28,11 +28,11 @@
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
-klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = 'right')
+klippy::klippy(tooltip_message = 'Click to Copy Code', tooltip_success = 'Done', position = 'right', color = "red")
 ```
 
 # Introduction
-In this tutorial, we demonstrate, using some simple simulated data, how meta-analyst's can implement approaches for correcting inflated Type I error rates when using multilevel models with non-independent effect size data. For ease of presentation, we use simulated data to demonstrate the implementation of a few easy solutions. 
+In this tutorial, we demonstrate how meta-analyst's can implement approaches for correcting inflated Type I error rates when using multilevel models with non-independent effect size data. For ease of presentation, we use simulated data to demonstrate the implementation of a few easy solutions. 
 
 # R Packages Required
 
@@ -55,7 +55,7 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
 ```{r simulated data, class.source='klippy'}
     # Simulate a dataset composed of 30 papers, each having 5 effects from the same study.
   
-        set.seed(97)
+        set.seed(870)
 
     # Parameters
           no.paper = 30   # Numbers of unique papers
@@ -95,9 +95,9 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
 
 Now that we have our simulated (i.e., fake or toy) data, we can demonstrate a few corrections that can be applied to multilevel meta-analytic models that will offset any possible inflated Type I error rates.
 
-# Fit the Multi-level Meta-analytic Model
+# Fit the Multi-level Meta-analytic (MLMA) Model
 
-First, lets just fit our multilevel meta-analytic model (MLMA). We can do that using our simulated data as follows:
+First, lets just fit our multilevel meta-analytic (MLMA) model. We can do that using our simulated data as follows:
 
 ```{r fitmodel, class.source='klippy'}
   mod_multilevel = metafor::rma.mv(yi = yi, V = vi, mods = ~1, 
@@ -105,18 +105,18 @@ First, lets just fit our multilevel meta-analytic model (MLMA). We can do that u
                                     data=data, test="t")
   summary(mod_multilevel)
 ```
-We have fit a simple MLMA model that estimates the overall meta-analytic mean. We can see that our model estimates this correctly. Remember that the true mean is `r mu`, and we are pretty close to this value (i.e., `r mod_multilevel$beta`). In this case, we know that the MLMA model is ignoring the dependence in effect sizes, which could be cause by both effect sizes coming from the same animals, but different traits, and also through shared sampling covariance. We expect, based on Song et al's simulations that this 'should' (at least on average) inflate Type I error rates. Below we describe a few corrections that meta-analysts can apply that should overcome the problems associated with not accounting for effect size dependence. 
+We have fit a simple MLMA model that estimates the overall meta-analytic mean. We can see that our model estimates this correctly. Remember that the true mean is `r mu`, and we are pretty close to this value (i.e., `r mod_multilevel$beta`). This is also true of our random effect variance estimates. In this case, we know that the MLMA model is ignoring the shared sampling variance dependence in effect sizes. We expect that this 'should' (at least on average) inflate Type I error rates. Assuming we did not know any better we would want to account for this dependence. Below, we describe a few corrections that meta-analysts can apply that should overcome the problems associated with not accounting for effect size dependence. 
 
-# Correction using Robust Variance Estimator
+# Correction using Robust Variance Estimator (RVE) with Saitterwaite Degrees of Freedom Correction
 
-A very simple solution is to make use of robust variance estimators in the `clubSandwich` package [@Pustejovsky2020; @Tipon2015]. This works with `metafor` objects [@Wolfgang2010] quite elegantly. The benefit of such an approach is simply that we need not make any assumptions about what the correlation between effect sizes actually is (assuming we didn't know the true correlation) [@Tipon2015]. In addition, it also will acount for possible heteroscedascity. This solution can be implemented as follows using our MLMA model with fit in the above section.
+A very simple solution is to make use of robust variance estimators (RVE). This can be done in a few packages, but very easily using the `clubSandwich` package [@Pustejovsky2020; @Hedges2010; @Tipon2015], which also works well with `metafor` [@Wolfgang2010] models. This appaoch also makes use of a Saitterwaite degrees of freedom correction [@SW; @Tipon2015]. This works with `metafor` objects quite elegantly. The benefit of such an approach is simply that we need not make any assumptions about what the correlation between effect sizes actually is (assuming we didn't know the true correlation) [@Hedges2010; @Tipon2015]. In addition, it also will acount for possible heteroscedascity. This solution can be implemented as follows using our MLMA model we fit in the above section.
 
 ```{r fitrobust, class.source='klippy'}
    mod_RVE <- coef_test(mod_multilevel, vcov="CR2", cluster = data$study_id)
-   mod_RVE
+   print(mod_RVE)
 ```
 
-With this simple (and well balanced) data, our RVE approches doesn't change the results, whcih is a good thing! In many cases, it may not. However, as is shown by the simulations of @Song2020 and ourselves [@Nakagawa2021], this will not be the case in all situations.
+With this simple (and well balanced) data, our RVE approches doesn't change the results much. 
 
 # Correction by Applying Bayesian Multi-level Meta-analytic Model
 
@@ -130,9 +130,11 @@ As we describe in our comment, Bayesian approaches, assuming one has a good samp
    summary(bayes_multilevel)
 ```
 
+As expected, our credible intervals get a little bit wider. 
+
 # Correction by Modeling the Entire Sampling Covariance Matrix
 
-Of course, we can also take an approach proposed by Noble et al 2017, where we simply assume that studies that come from the same study (whether this be due to shared-control or shared trait dependence), are correletd by r = 0.5. Ultimately, one could change this correlation depending on the situation and context, but r = 0.5 will probably suffice in most situations. This assumes, however, that the degree of correlation among effect sizes within a study is the same across studies. THis assumption is relaxed in RVE approaches decsribed above. We can also test whether this is a safe assumption by combining it with a ClubSandwich esatimator. We can build the matrix an implement this approach as follows:
+Of course, we can also take an approach proposed by @Noble2017, where we fit the covariance matrix directly by simply assuming that effects that come from the same study are correletd by r = 0.5. Ultimately, one could change this correlation, depending on the situation and context, but r = 0.5 will probably suffice in many situations. This assumes, however, that the degree of correlation among effect sizes within a study is the same across studies. This assumption is relaxed in the RVE approaches decsribed above. We can also test whether this is a safe assumption by combining it with a ClubSandwich estimator. We can build the matrix an implement this approach as follows:
 
 ```{r VCVmatrix, class.source='klippy'}
                  vcv <- impute_covariance_matrix(vi = data$vi, cluster = data$study_id, r = 0.5)
@@ -140,12 +142,11 @@ Of course, we can also take an approach proposed by Noble et al 2017, where we s
   mod_multilevel_vcv <- metafor::rma.mv(yi=yi, V = vcv, mods=~1, random=list(~1|study_id,~1|obs), data=data, test="t")
 
   mod_multilevel_vcv <- coef_test(mod_multilevel_vcv, vcov="CR2", cluster = data$study_id)
-  mod_multilevel_vcv
-
+  print(mod_multilevel_vcv)
 ```
 
 # Conclusions
-The goal of our short tutorial was to dispel the idea that overcoming, and implementing, solutions to deal with non-independent effect sizes when working with multi-level meta-analytic models is challenging. Our simulations show [@Nakagawa2021] that there are a number of very esaily implemented solutions so meta-analysts can harness the power of MLMA models without the need to average effect sizes, as suggested by @Song2020. 
+The goal of our short tutorial was to dispel the idea that overcoming, and implementing, solutions to deal with non-independent effect sizes when working with multi-level meta-analytic models is challenging. Our simulations show [@Nakagawa2021] that there are a number of very easily implemented solutions. As such, meta-analyst's can harness the power of MLMA models without the need to average effect sizes, as suggested by @Song2020. 
 
 # Session Info
 ```{r session, echo=FALSE}
