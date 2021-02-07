@@ -3,7 +3,7 @@
   author: Shinichi Nakagawa, Alistair M. Senior, Wolfgang Viechtbauer and Daniel W. A. Noble
   date: "`r Sys.Date()`"
   bibliography: refs.bib
-  csl: science.csl
+  csl: ecology.csl
   output: 
     bookdown::html_document2:
       code_folding: hide
@@ -21,14 +21,18 @@
 ---
 
 ```{r setup, include=FALSE}
-  knitr::opts_chunk$set(echo = TRUE, cache = TRUE, message = FALSE, warning = FALSE, tidy = TRUE, fig.width = 10)
+  knitr::opts_chunk$set(echo = TRUE, cache = FALSE, message = FALSE, warning = FALSE, tidy = TRUE, fig.width = 10)
   ## numbers >= 10^5 will be denoted in scientific notation,      ## numbers >= 10^5 will be denoted in scientific notation,
     ## and rounded to 2 digits      ## and rounded to 2 digits
     options(digits = 2)
 ```
 
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = 'right')
+```
+
 # Introduction
-In this tutorial, we demonstrate, using some simple simulated data, how meta-analyst's can implement approaches for correcting inflated Type I error rates when using multilevel models with non-independent effect size data. For ease of presentation, we use simulated data throughout. We demonstrate two of the simplest, and most effective, methods that are most robust to a wide array of contexts that a meta-analyst might be faced with in analyzing their data.
+In this tutorial, we demonstrate, using some simple simulated data, how meta-analyst's can implement approaches for correcting inflated Type I error rates when using multilevel models with non-independent effect size data. For ease of presentation, we use simulated data to demonstrate the implementation of a few easy solutions. 
 
 # R Packages Required
 
@@ -48,10 +52,10 @@ First, we'll load some of the packages that we'll need.
 
 Here, we will simulate some meta-analytic data. We will keep this very simple, just for demonstration purposes. Hence, we will assume that we have collected data from a total of 30 studies, and we'll assume that we were able to extract n = 5 effect sizes from each of these 30 studies. In total, we have a data set that contains n = 150 effect sizes.
 
-```{r simulated data}
-    # Simulate a dataset composed of 30 papers, each having between 5 effects from the same study.
+```{r simulated data, class.source='klippy'}
+    # Simulate a dataset composed of 30 papers, each having 5 effects from the same study.
   
-        set.seed(870)
+        set.seed(97)
 
     # Parameters
           no.paper = 30   # Numbers of unique papers
@@ -95,7 +99,7 @@ Now that we have our simulated (i.e., fake or toy) data, we can demonstrate a fe
 
 First, lets just fit our multilevel meta-analytic model (MLMA). We can do that using our simulated data as follows:
 
-```{r fitmodel}
+```{r fitmodel, class.source='klippy'}
   mod_multilevel = metafor::rma.mv(yi = yi, V = vi, mods = ~1, 
                                     random=list(~1|study_id,~1|obs), 
                                     data=data, test="t")
@@ -105,20 +109,20 @@ We have fit a simple MLMA model that estimates the overall meta-analytic mean. W
 
 # Correction using Robust Variance Estimator
 
-A very simple solution is to make use of robust variance estimators in the `clubSandwich` package. This works with `metafor` objects quite elegantly. The benefit of such an approach is simply that we need not make any assumptions about what the correlation between effect sizes actually is (assuming we didn't know the true correlation). In addition, it also will acount for possible heteroscedascity. This solution can be implemented as follows using our MLMA model with fit in the above section.
+A very simple solution is to make use of robust variance estimators in the `clubSandwich` package [@Pustejovsky2020; @Tipon2015]. This works with `metafor` objects [@Wolfgang2010] quite elegantly. The benefit of such an approach is simply that we need not make any assumptions about what the correlation between effect sizes actually is (assuming we didn't know the true correlation) [@Tipon2015]. In addition, it also will acount for possible heteroscedascity. This solution can be implemented as follows using our MLMA model with fit in the above section.
 
-```{r fitrobust}
+```{r fitrobust, class.source='klippy'}
    mod_RVE <- coef_test(mod_multilevel, vcov="CR2", cluster = data$study_id)
    mod_RVE
 ```
 
-With this simple (and well balanced) data, our RVE approches doesn't change the results. In many cases, it may not. However, as is shown by the simulations of Song and ourselves, this will not be the case in all situations.
+With this simple (and well balanced) data, our RVE approches doesn't change the results, whcih is a good thing! In many cases, it may not. However, as is shown by the simulations of @Song2020 and ourselves [@Nakagawa2021], this will not be the case in all situations.
 
 # Correction by Applying Bayesian Multi-level Meta-analytic Model
 
-As we describe in our comment, Bayesian approaches, assuming one has a good sample size, do a very good job correcting for inflated Type I errors across a variety of situations. Baysian MLMA models can be fit in various packages. Probably the most flexible for meta-analyst's are `MCMCglmm` and `brms`. Here, we demonstrate how to fit the same MLMA model using `MCMCglmm` which has a syntax that is different from the typical one used in packages such as `metafor` and `lme4`, which meta-analysts might be more acustomed too. 
+As we describe in our comment, Bayesian approaches, assuming one has a good sample size, do a very good job correcting for inflated Type I errors across a variety of situations. Baysian MLMA models can be fit in various packages. Probably the most flexible for meta-analyst's are `MCMCglmm` [@Hadfield2010] and `brms` [@Brkner2017; @Brkner2018]. Here, we demonstrate how to fit the same MLMA model using `MCMCglmm` which has a syntax that is different from the typical one used in packages such as `metafor` and `lme4` [@Bates2015], which meta-analysts might be more acustomed too. 
 
-```{r bayes}
+```{r bayes, class.source='klippy'}
     prior <- list(R = list(V = 1, nu = 0.002), 
                   G = list(G1 = list(V = 1 , nu = 1, alpha.mu=0, alpha.V=25^2)))
 
@@ -130,7 +134,7 @@ As we describe in our comment, Bayesian approaches, assuming one has a good samp
 
 Of course, we can also take an approach proposed by Noble et al 2017, where we simply assume that studies that come from the same study (whether this be due to shared-control or shared trait dependence), are correletd by r = 0.5. Ultimately, one could change this correlation depending on the situation and context, but r = 0.5 will probably suffice in most situations. This assumes, however, that the degree of correlation among effect sizes within a study is the same across studies. THis assumption is relaxed in RVE approaches decsribed above. We can also test whether this is a safe assumption by combining it with a ClubSandwich esatimator. We can build the matrix an implement this approach as follows:
 
-```{r VCVmatrix}
+```{r VCVmatrix, class.source='klippy'}
                  vcv <- impute_covariance_matrix(vi = data$vi, cluster = data$study_id, r = 0.5)
   
   mod_multilevel_vcv <- metafor::rma.mv(yi=yi, V = vcv, mods=~1, random=list(~1|study_id,~1|obs), data=data, test="t")
@@ -141,10 +145,11 @@ Of course, we can also take an approach proposed by Noble et al 2017, where we s
 ```
 
 # Conclusions
-We have shown that 
+The goal of our short tutorial was to dispel the idea that overcoming, and implementing, solutions to deal with non-independent effect sizes when working with multi-level meta-analytic models is challenging. Our simulations show [@Nakagawa2021] that there are a number of very esaily implemented solutions so meta-analysts can harness the power of MLMA models without the need to average effect sizes, as suggested by @Song2020. 
 
 # Session Info
-```{r session}
+```{r session, echo=FALSE}
 sessionInfo() %>% pander()
-
 ```
+
+# References
