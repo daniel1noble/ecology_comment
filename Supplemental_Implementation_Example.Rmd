@@ -28,6 +28,8 @@
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
+install.packages("devtools")
+remotes::install_github("rlesur/klippy")
 klippy::klippy(tooltip_message = 'Click to Copy Code', tooltip_success = 'Done', position = 'right', color = "red")
 ```
 
