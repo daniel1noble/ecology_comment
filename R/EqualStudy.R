@@ -160,7 +160,7 @@ for(k in 1:scenario){
 }
 
 
-save.image(file="EqualStudy.RData")
+save.image(file="./sim_check_rerun/EqualStudy.RData")
 
 
 # Explore what the results are for the precision of the estimate across 27 sceneries; as defined in param. Take the SD of the estimate vector for all 10 methods
