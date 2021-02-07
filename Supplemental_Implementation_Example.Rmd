@@ -67,7 +67,7 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
          var_paper = 0.5  # Between-study variance (i.e., tau2)
         var_effect = 0.2  # Effect size (or within study) variance
                 mu = 0.4  # Average, or overall, effect size
-               
+               rho = c(0.2, 0.4, 0.6, 0.8)
     # Add sampling variance
           # First, sample
           n.sample <- rnbinom(no.paper, mu = 40, size = 0.5) + 4
@@ -89,7 +89,7 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
       # Create list of matrices, 1 for each study
       matrices <- list()
       for(i in 1:no.paper){
-                    r <- sample(c(0.2, 0.4, 0.6, 0.8), size = 1, replace = TRUE)
+                    r <- sample(rho, size = 1, replace = TRUE)
                   tmp <- matrix(r, nrow = n.effects, ncol = n.effects)
             diag(tmp) <- 1
         matrices[[i]] <- tmp
