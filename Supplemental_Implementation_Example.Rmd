@@ -64,10 +64,10 @@ Here, we will simulate some meta-analytic data. We will keep this very simple, j
          n.effects = 3    # Number of effects per paper. We will keep simple and balanced
              rho.e = 0.8  # Correlation in sampling variances
           study_id = rep(1:no.paper, each = n.effects)  # Study ID's
-         var_paper = 0.5  # Between-study variance (i.e., tau2)
-        var_effect = 2  # Effect size (or within study) variance
+         var_paper = 1  # Between-study variance (i.e., tau2)
+        var_effect = 0.3  # Effect size (or within study) variance
                 mu = 0.4  # Average, or overall, effect size
-               rho = 0 #c(0.1, 0.2, 0.3, 0.4) # Note that, setting this to zero equates to Shinichi's approach
+               rho = c(0.1, 0.2, 0.3, 0.4) # Note that, setting this to zero equates to Shinichi's approach
    
      # Add sampling variance
           # First, sample
