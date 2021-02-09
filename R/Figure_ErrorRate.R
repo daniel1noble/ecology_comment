@@ -5,7 +5,7 @@ pacman::p_load(biwavelet, ggplot2, cowplot, gridGraphics, tidyverse)
 #Define the layout of multiple panel figure using layout matrix#
 #layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(11:12),c(3:4),c(3:4),c(3:4),c(5:6),c(5:6),c(5:6),c(13:14),c(7:8),c(7:8),c(7:8),c(9:10),c(9:10),c(9:10))
 
-method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3), rgb(0.8,0.1,0.1), rgb(0.8,0.1,0.4))
+method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3))
 
 layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(3:4),c(3:4),c(3:4),c(9:10),c(5:6),c(5:6),c(5:6),c(7:8),c(7:8),c(7:8))
 
@@ -222,10 +222,10 @@ p2 <- recordPlot()
    combined_error <- as.data.frame(rbind(error_ES, error.varytau, error_US)[,-1]) # we don't care about 1, so we can ditch)
 
 # Now, lets just plot across all the methods
-colnames(combined_error) <- c("One", "AV", "MLM", "RVE", "Papers_df", "CS", "SW_df", "Bayes")
+   colnames(combined_error) <- c("AV", "One", "MLM", "RVE", "Papers_df", "CS", "SW_df", "Bayes")
 
 combined_data <- tidyr::pivot_longer(combined_error, cols = c(1:8), names_to = "Method")
-combined_data$Method <- factor(combined_data$Method, levels = c("One", "AV", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"))
+combined_data$Method <- factor(combined_data$Method, levels = c("AV", "One", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"))
 
 # Some summary stats
 apply(combined_error, 2, range) #0.0344 for Bayes is lowest of all; 
@@ -238,13 +238,14 @@ p1 <- ggplot(combined_data, aes(x=Method, y=value*100)) +
   geom_jitter(shape=16, position=position_jitter(0.1), color = "black") +
   labs(y = "Error Rate %",
   		x = "Method") + 
-  scale_fill_manual(breaks = c("One", "AV", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"), 
-                   values=c(rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3), rgb(0.8,0.1,0.1), rgb(0.8,0.1,0.4))) + 
-  theme_classic() + 
+  scale_fill_manual(breaks = c("AV", "One", "MLM", "RVE", "CS", "Papers_df", "SW_df", "Bayes"), 
+                   values=c(rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3))) + 
+  							#rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3)
+  theme_classic() +         
   geom_hline(yintercept = 5, linetype = "dashed", colour = "darkgrey") +
   theme(axis.text.x = element_blank())
 #dev.off()
-
+#rgb(0.8,0.1,0.1), rgb(0.8,0.1,0.4)
 
 ############################################
 # New combined figure
