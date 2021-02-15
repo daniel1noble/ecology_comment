@@ -5,7 +5,7 @@ pacman::p_load(biwavelet, ggplot2, cowplot, gridGraphics, tidyverse)
 #Define the layout of multiple panel figure using layout matrix#
 #layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(11:12),c(3:4),c(3:4),c(3:4),c(5:6),c(5:6),c(5:6),c(13:14),c(7:8),c(7:8),c(7:8),c(9:10),c(9:10),c(9:10))
 
-method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.6,0.8),  rgb(0.40,0.5,0.8), rgb(0.35,0.5,0.5), rgb(0.40,0.2,0.3))
+method.col = c(rgb(0,0,0),rgb(0.9,0.6,0),rgb(0.8,0.4,0),rgb(0,0.45,0.7),rgb(0.35,0.7,0.9), rgb(0.35,0.5,0.5), rgb(0.35,0.6,0.8), rgb(0.40,0.5,0.8), rgb(0.40,0.2,0.3))
 
 layout.mat = rbind(c(1:2),c(1:2),c(1:2),c(3:4),c(3:4),c(3:4),c(9:10),c(5:6),c(5:6),c(5:6),c(7:8),c(7:8),c(7:8))
 
