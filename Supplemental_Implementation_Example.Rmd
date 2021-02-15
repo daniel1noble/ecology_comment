@@ -135,6 +135,8 @@ A very simple solution is to make use of robust variance estimators (RVE). This 
 ```{r fitrobust, class.source='klippy'}
    mod_RVE <- coef_test(mod_multilevel, vcov="CR2", cluster = data$study_id)
    print(mod_RVE)
+   
+   mod <- robumeta::robu(formula=yi~1, data=data, studynum=study_id, var.eff.size=vi, method = "HIER", small = FALSE)
 ```
 
 With this simple (and well balanced) data, our RVE approches doesn't change the results much. 
