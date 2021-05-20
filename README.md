@@ -13,8 +13,5 @@ This repository houses the code and supplementary tutorial used to demonstrate h
 
 *Just want to know how to apply corrections?* Users who are interested in learning more about how they can correct for non-independence can open and read the `Supplemental_Implementation_Example.html`
 
-## Citation
-Nakagawa, S., A. M. Senior, W. Viechtbauer, and D. W. A. Noble. 2021. An assessment of statistical methods for non-independent data in ecological meta-analyses: comment. Ecology
-
 ## References
 Song, C., S. D. Peacor, C. W. Osenberg, and J. R. Bence. 2020. An assessment of statistical methods for nonindependent data in ecological meta-analyses. Ecology online: e03184.
