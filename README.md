@@ -1,4 +1,5 @@
 # Ecology Commentary 
+[![DOI](https://zenodo.org/badge/297001378.svg)](https://zenodo.org/badge/latestdoi/297001378)
 
 ## Introduction
 This repository houses the code and supplementary tutorial used to demonstrate how multi-level meta-analytic models from `metafor` can be corrected to avoid infated Type I error in the presence of non-independent effect sizes. The commentary is a response to Song et al. (2020), to show how a few simple corrections can provide some resolution to problems they identify in their very thorough simulations.
