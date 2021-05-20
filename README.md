@@ -3,7 +3,8 @@
 
 ## Citation
 This paper has now been accepted for publication in *Ecology*:
-`Shinichi Nakagawa, Alistair M. Senior, Wolfgang Viechtbauer, and Daniel W. A. Noble. An assessment of statistical methods for non-independent data in ecological meta-analyses. Ecology, accepted 20 May 2021.`
+
+Shinichi Nakagawa, Alistair M. Senior, Wolfgang Viechtbauer, and Daniel W. A. Noble. An assessment of statistical methods for non-independent data in ecological meta-analyses. Ecology, accepted 20 May 2021.
 
 ## Introduction
 This repository houses the code and supplementary tutorial used to demonstrate how multi-level meta-analytic models from `metafor` can be corrected to avoid infated Type I error in the presence of non-independent effect sizes. The commentary is a response to Song et al. (2020), to show how a few simple corrections can provide some resolution to problems they identify in their very thorough simulations.
