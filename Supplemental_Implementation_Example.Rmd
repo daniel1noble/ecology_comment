@@ -28,7 +28,7 @@
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
-install.packages("devtools")
+#install.packages("devtools")
 remotes::install_github("rlesur/klippy")
 klippy::klippy(tooltip_message = 'Click to Copy Code', tooltip_success = 'Done', position = 'right', color = "red")
 ```
@@ -46,9 +46,13 @@ First, we'll load some of the packages that we'll need.
 
   # Loading packages & Functions
   
-      install.packages("pacman")
-      remotes::install_github("wviechtb/metafor"); library(metafor)
-      pacman::p_load(tidyverse, MASS, kableExtra, gridExtra,  MCMCglmm, brms, robumeta, clubSandwich, pander, tidyverse)
+    #install.packages("pacman")
+
+  # Note. To get the latest development versuon of metafor use the follow code
+      #remotes::install_github("wviechtb/metafor"); library(metafor)
+
+  # Load packages
+      pacman::p_load(tidyverse, MASS, kableExtra, gridExtra,  metafor, MCMCglmm, brms, robumeta, clubSandwich, pander, tidyverse)
 ```
 
 # Simulating Non-independent Effect Size Data
@@ -126,15 +130,17 @@ First, lets just fit our multilevel meta-analytic (MLMA) model. We can do that u
 ```
 We have fit a simple MLMA model that estimates the overall meta-analytic mean. We can see that our model estimates this correctly. Remember that the true mean is `r mu`, and we are pretty close to this value (i.e., `r mod_multilevel$beta`). This is also true of our random effect variance estimates. In this case, we know that the MLMA model is ignoring the shared sampling variance dependence in effect sizes. We expect that this 'should' (at least on average) inflate Type I error rates. Assuming we did not know any better we would want to account for this dependence. Below, we describe a few corrections that meta-analysts can apply that should overcome the problems associated with not accounting for effect size dependence. 
 
-Before moving on to some useful corrections, users should be aware that the most up-to-date version of `metafor` (version 2.5-101) does now provide users with some protection against Type I errors. Instead of using the number of effect sizes in the calculation of the degrees of freedom the user instead can make use of the total numbers of papers instead. We show in our simulations that a "papers-1" degrees of freedom can be fairly good. This can be implemented as follows:
+Before moving on to some useful corrections, users should be aware that the most up-to-date version of `metafor` (version 2.5-101) does now provide users with some protection against Type I errors. Instead of using the number of effect sizes in the calculation of the degrees of freedom we can instead make use of the total numbers of papers instead. We show in our simulations that a "papers-1" degrees of freedom can be fairly good. This can be implemented as follows after installing the development version of `metafor` (see "R Packages Required" above):
 
-```{r fitmodel, class.source='klippy'}
+```{r fitmodel2, class.source='klippy'}
   
   mod_multilevel_pdf = rma.mv(yi = yi, V = vi, mods = ~1, 
                                     random=list(~1|study_id,~1|obs), 
                                     data=data, test="t", dfs = "contain")
   summary(mod_multilevel_pdf)
 ```
+
+We can see here that the df for the model has changes from 149 to 29, and the p-value has been adjusted accordingly. 
 
 # Correction using Robust Variance Estimator (RVE) with Saitterwaite Degrees of Freedom Correction
 
