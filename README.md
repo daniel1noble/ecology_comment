@@ -11,7 +11,7 @@ This repository houses the code and supplementary tutorial used to demonstrate h
 
 *Reproducing the simulations?* Users wanting to reproduce Song et al's (2020) simulations, along with the correlations implemented by us can find all the R code in tge `R/` directory.
 
-*Just want to know how to apply corrections?* Users who are interested in learning more about how they can correct for non-independence can open and read the `Supplemental_Implementation_Example.html`
+*Just want to know how to apply corrections?* Users who are interested in learning more about how they can correct for non-independence read the [Supplemental Example](https://daniel1noble.github.io/ecology_comment/)
 
 ## References
 Song, C., S. D. Peacor, C. W. Osenberg, and J. R. Bence. 2020. An assessment of statistical methods for nonindependent data in ecological meta-analyses. Ecology online: e03184.
